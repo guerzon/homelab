@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "lab"
+version = "0.1.0"
+description = "Repo for my lab environment | RHEL, Linux, Helm, Ansible, OpenShift"
+authors = ["Lester Guerzon <guerzon@proton.me>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+molecule = "^24.9.0"
+ansible = "^10.4.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

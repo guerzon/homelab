@@ -1,0 +1,5 @@
+---
+- hosts: vaultwardenhosts
+  become: true
+  roles:
+    - common

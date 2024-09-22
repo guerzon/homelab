@@ -1,0 +1,6 @@
+---
+# tasks file for common
+- name: Ensure ntp is installed
+  ansible.builtin.dnf:
+    name: chrony
+    state: latest
