@@ -1,13 +1,54 @@
-domain: "https://vaultwarden.contoso.com"
+domain: "https://vaultwarden.sreafterhours.dev"
+
+signupsVerify: false
+
+replicas: 5
+
+service:
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
 
 ingress:
   enabled: true
-  hostname: vaultwarden.contoso.com
+  hostname: vaultwarden.sreafterhours.dev
   class: "alb"
+  nginxIngressAnnotations: false
   additionalAnnotations:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/tags: Environment=test,Team=POC
+    alb.ingress.kubernetes.io/certificate-arn: "<ARN>"
 
 adminToken:
-  value: "khit9gYQV6ax9LKTTm+s6QbZi5oiuR+3s1PEn9q3IRmCl9IQn7LmBpmFCOYTb7Mr"
+  value: "sdfgoiohklw9090ade7fg890@.._0sdolllam"
+
+database:
+  type: postgres
+  host: vaultwarden-test-postgres.cjca488yyv7a.ap-southeast-1.rds.amazonaws.com:5432
+  username: warden
+  password: Sup3rs3cretPassword
+  dbName: vaultwarden
+
+data:
+  name: "vaultwarden-data"
+  size: "15Gi"
+  class: "ebs-sc"
+  keepPvc: true
+  accessMode: "ReadWriteOnce"
+
+attachments:
+  name: "vaultwarden-files"
+  size: "100Gi"
+  class: "ebs-sc"
+  keepPvc: true
+  accessMode: "ReadWriteOnce"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi

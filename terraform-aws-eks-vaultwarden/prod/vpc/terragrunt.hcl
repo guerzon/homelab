@@ -1,5 +1,5 @@
 terraform {
-    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/network?ref=v1.1.0"
+    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/network?ref=v1.4.0"
 }
 
 include "root" {

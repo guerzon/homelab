@@ -1,5 +1,5 @@
 terraform {
-    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/eks?ref=v1.1.0"
+    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/eks?ref=v1.4.0"
 }
 
 include "root" {
@@ -15,14 +15,14 @@ include "testvars" {
 inputs = {
     environment = include.testvars.locals.environment
     k8s_version = "1.31"
-    eks_cluster_name = "vaultwarden-${include.testvars.locals.environment}-${include.testvars.locals.eks_cluster_name}"
+    eks_cluster_name = "vaultwarden-${include.testvars.locals.environment}-eks"
     subnet_ids = dependency.vpc.outputs.private_subnet_ids
     node_groups = {
         general = {
             capacity_type = "ON_DEMAND"
             instance_type = ["t3a.xlarge"]
             scaling_config = {
-                desired_size = 1
+                desired_size = 3
                 max_size = 10
                 min_size = 0
             }

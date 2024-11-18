@@ -1,5 +1,5 @@
 terraform {
-    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/network?ref=v1.1.0"
+    source = "git@github.com:guerzon/terraform-aws-modulescollection.git//vaultwarden-kubernetes/network?ref=v1.4.0"
 }
 
 include "root" {
@@ -18,5 +18,5 @@ inputs = {
     availability_zones = ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"]
     private_subnets = ["10.10.0.0/19", "10.10.32.0/19", "10.10.64.0/19"]
     public_subnets = ["10.10.96.0/19", "10.10.128.0/19", "10.10.160.0/19"]
-    eks_cluster_name = "vaultwarden-${include.testvars.locals.environment}-${include.testvars.locals.eks_cluster_name}"
+    eks_cluster_name = "vaultwarden-${include.testvars.locals.environment}-eks"
 }

@@ -6,7 +6,7 @@ remote_state {
     }
 
     config = {
-        profile = "terraform@contosoorg"
+        profile = "terraform@guerzon"
         role_arn = "arn:aws:iam::<YOUR-AWS-ACCOUNT-ID>:role/TerraformRole"
         bucket = "vaultwarden-tf"
         key = "${path_relative_to_include()}/terraform.tfstate"
@@ -22,7 +22,7 @@ generate "provider" {
     contents = <<EOF
 provider "aws" {
   region  = "ap-southeast-1"
-  profile = "terraform@contosoorg"
+  profile = "terraform@guerzon"
   assume_role {
     session_name = "vaultwarden-demo"
     role_arn = "arn:aws:iam::<YOUR-AWS-ACCOUNT-ID>:role/TerraformRole"
