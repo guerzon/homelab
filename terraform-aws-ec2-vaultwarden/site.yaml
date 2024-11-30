@@ -1,0 +1,8 @@
+---
+- hosts: all
+  vars:
+    domain: "https://vaultwarden.sreafterhours.io"
+    rocket_port: 8080
+    data_folder: "/srv/data"
+  roles:
+    - guerzon.vaultwarden
