@@ -7,7 +7,9 @@ remote_state {
 
     config = {
         profile = "terraform@guerzon"
-        role_arn = "arn:aws:iam::<YOUR-AWS-ACCOUNT-ID>:role/TerraformRole"
+        assume_role = {
+          role_arn = "arn:aws:iam::<YOUR-AWS-ACCOUNT-ID>:role/TerraformRole"
+        }
         bucket = "vaultwarden-tf"
         key = "${path_relative_to_include()}/terraform.tfstate"
         region = "ap-southeast-1"
