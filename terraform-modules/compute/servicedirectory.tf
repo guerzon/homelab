@@ -22,7 +22,7 @@ resource "google_service_directory_endpoint" "backend_endpoint" {
   service     = google_service_directory_service.default.id
   network     = "projects/${data.google_project.project.number}/locations/global/networks/${var.network_name}"
 
-  address = google_compute_instance.main.network_interface[0].network_ip
+  address = google_compute_instance.default.network_interface[0].network_ip
   port    = 8081
 }
 
@@ -32,6 +32,6 @@ resource "google_service_directory_endpoint" "frontend_endpoint" {
   service     = google_service_directory_service.default.id
   network     = "projects/${data.google_project.project.number}/locations/global/networks/${var.network_name}"
 
-  address = google_compute_instance.main.network_interface[0].network_ip
+  address = google_compute_instance.default.network_interface[0].network_ip
   port    = 3031
 }

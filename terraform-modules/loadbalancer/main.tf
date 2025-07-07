@@ -92,7 +92,7 @@ resource "google_compute_url_map" "load_balancer_http" {
 resource "google_compute_target_https_proxy" "default" {
   name             = "${var.environment}-target-https-proxy"
   url_map          = google_compute_url_map.load_balancer_https.self_link
-  ssl_certificates = [google_compute_ssl_certificate.default.self_link]
+  ssl_certificates = var.ssl_certificates
   ssl_policy       = google_compute_ssl_policy.default.self_link
 }
 # HTTP

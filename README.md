@@ -6,7 +6,7 @@ Modules:
 
 - [x] Network
 - [x] Compute Engine
-- [] Certificate
+- [x] Certificate
 - [x] ALB
 - [x] PostgreSQL
 - [x] Firewall
@@ -14,16 +14,21 @@ Modules:
 - [x] Cloud Armor
 - [] GKE Standard Cluster
 
-## Monitoring and alerting
+## GKE workloads
 
-Running on Compute Engine instances:
+### Management
+
+- [] Jenkins
+- [] ArgoCD
+
+### Monitoring and alerting
 
 - [] Prometheus
 - [] Grafana
 
-## Demo application
+### Applications
 
-Vaultwarden running on GKE cluster:
+Vaultwarden, using:
 
 - [] Secrets Manager
 - [] Cloud SQL PostgreSQL, single-region
@@ -31,7 +36,3 @@ Vaultwarden running on GKE cluster:
 - [] Call [Helm chart](https://github.com/guerzon/vaultwarden)
 - [] Nginx Ingress
 - [] DNS
-
-## CI/CD
-
-GitHub Actions

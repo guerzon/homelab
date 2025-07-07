@@ -22,12 +22,6 @@ variable "subnets" {
   }
 }
 
-variable "build_backup" {
-  type        = bool
-  description = "Flag to indicate whether to create a backup instance"
-  default     = false
-}
-
 variable "auto_create_subnetworks" {
   type        = bool
   description = "Auto-create subnets or not"

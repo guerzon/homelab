@@ -57,7 +57,7 @@ variable "api_url" {
 
 variable "build_backup" {
   type        = bool
-  description = "Flag to indicate whether to create a backup instance"
+  description = "Flag to indicate whether a backup instance is available and should be added to the ALB."
   default     = false
 }
 
@@ -81,16 +81,6 @@ variable "security_policy_id" {
   description = "The ID of the Cloud Armor security policy to be applied to the load balancer"
 }
 
-variable "ssl_certificate" {
-  type        = string
-  description = "The file containing the PEM-format SSL certificate"
-}
-
-variable "ssl_private_key" {
-  type        = string
-  description = "The file containing the SSL private key"
-}
-
 variable "ssl_policy_profile" {
   type        = string
   description = "The SSL policy profile"
@@ -101,4 +91,10 @@ variable "ssl_min_tls_version" {
   type        = string
   description = "Minimum TLS version (e.g. TLS_1_2)"
   default     = "TLS_1_2"
+}
+
+variable "ssl_certificates" {
+  type        = list(string)
+  description = "List of one or more SSL certificate self-links to use for the HTTPs Load Balancer"
+  default     = null
 }
