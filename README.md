@@ -4,6 +4,7 @@
 
 Modules:
 
+- [x] Registry
 - [x] Network
 - [x] Compute Engine
 - [x] Certificate
