@@ -39,3 +39,5 @@ terraform.rc
 .terragrunt-cache
 
 site-local.yaml
+
+Setup.md
