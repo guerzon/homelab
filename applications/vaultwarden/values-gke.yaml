@@ -1,0 +1,43 @@
+domain: "https://vaultwarden.homelab.sreafterhours.dev"
+
+signupsVerify: true
+
+replicas: 5
+
+service:
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+
+# ingress:
+#   enabled: true
+#   hostname: vaultwarden.homelab.sreafterhours.dev
+#   class: "alb"
+#   nginxIngressAnnotations: false
+  # additionalAnnotations:
+  #   alb.ingress.kubernetes.io/scheme: internet-facing
+  #   alb.ingress.kubernetes.io/target-type: ip
+  #   alb.ingress.kubernetes.io/tags: Environment=test,Team=POC
+  #   alb.ingress.kubernetes.io/certificate-arn: "<ARN>"
+
+database:
+  type: postgres
+
+storage:
+  data:
+    name: "vaultwarden-data"
+    size: "10Gi"
+    accessMode: "ReadWriteOnce"
+  attachments:
+    name: "vaultwarden-files"
+    size: "10Gi"
+    accessMode: "ReadWriteOnce"
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi

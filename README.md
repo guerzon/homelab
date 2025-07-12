@@ -2,18 +2,19 @@
 
 ## Terraform
 
-Modules:
+Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 
 - [x] Registry
 - [x] Network
 - [x] Compute Engine
 - [x] Certificate
 - [x] ALB
-- [x] PostgreSQL
+- [x] Cloud SQL Instance
+- [x] Database
 - [x] Firewall
 - [] Cloud DNS zone
 - [x] Cloud Armor
-- [] GKE Standard Cluster
+- [x] GKE Standard Cluster
 
 ## GKE workloads
 
@@ -29,11 +30,11 @@ Modules:
 
 ### Applications
 
-Vaultwarden, using:
+[Vaultwarden](./applications/vaultwarden/), using:
 
 - [] Secrets Manager
-- [] Cloud SQL PostgreSQL, single-region
-- [] GKE Standard Cluster, single-region
-- [] Call [Helm chart](https://github.com/guerzon/vaultwarden)
+- [x] Cloud SQL PostgreSQL, single-region
+- [x] GKE Standard Cluster, single-region
+- [x] Call [Helm chart](https://github.com/guerzon/vaultwarden)
 - [] Nginx Ingress
 - [] DNS
