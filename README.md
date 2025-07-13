@@ -12,7 +12,7 @@ Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 - [x] Cloud SQL Instance
 - [x] Database
 - [x] Firewall
-- [] Cloud DNS zone
+- [x] Cloud DNS zone
 - [x] Cloud Armor
 - [x] GKE Standard Cluster
 

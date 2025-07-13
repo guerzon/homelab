@@ -19,3 +19,7 @@ variable "vaultwarden_database_name" {}
 variable "vaultwarden_database_user" {}
 
 variable "vaultwarden_database_password" {}
+
+variable "public_zone_dns" {}
+
+variable "private_zone_dns" {}
