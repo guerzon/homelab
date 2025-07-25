@@ -18,6 +18,10 @@ terraform {
       source  = "hashicorp/google-beta"
       version = "~>6.41"
     }
+    helm = {
+      source  = "hashicorp/helm"
+      version = "~>3.0"
+    }
   }
   backend "gcs" {
     bucket = "terraform-gcp-portfolio-465603"

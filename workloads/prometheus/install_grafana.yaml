@@ -1,0 +1,20 @@
+---
+- hosts: grafana
+  become: true
+  tasks:
+    - name: Install and configure Grafana
+      ansible.builtin.include_role:
+        name: prometheus.prometheus.prometheus
+      vars:
+        prometheus_version: "3.4.2"
+        # prometheus_config_flags:
+        #   - "--web.enable-lifecycle"
+        # prometheus_targets:
+        #   - targets:
+        #       - "localhost:9090"
+        #     labels:
+        #       job: prometheus
+        #   - targets:
+        #       - "localhost:9100"
+        #     labels:
+        #       job: node_exporter

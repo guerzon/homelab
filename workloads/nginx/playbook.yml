@@ -1,0 +1,58 @@
+- hosts: proxy
+  gather_facts: no
+  tasks:
+    
+    - name: Install Nginx
+      ansible.builtin.dnf:
+        name: nginx
+        state: latest
+      become: true
+    
+    - name: Configure Nginx
+      ansible.builtin.copy:
+        src: nginx.conf
+        dest: /etc/nginx/nginx.conf
+        mode: '0644'
+      become: true
+      notify: Restart Nginx
+
+    - name: Copy certificates and keys
+      ansible.builtin.copy:
+        src: "{{ item.file }}"
+        dest: "/etc/nginx/{{ item.file }}"
+        mode: "{{ item.perm }}"
+      become: true
+      no_log: true
+      loop:
+        - { file: "{{ domain }}.crt", perm: '0644' }
+        - { file: "{{ domain }}.pem", perm: '0600' }
+      notify: Restart Nginx
+
+    - name: Configure virtual hosts
+      ansible.builtin.template:
+        src: "{{ item }}.conf"
+        dest: "/etc/nginx/conf.d/{{ item }}.conf"
+        mode: '0644'
+      become: true
+      with_items:
+        - jenkins
+      notify: Restart Nginx
+
+    - name: Ensure Nginx is started and enabled
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
+        enabled: true
+      become: true
+      when: not ansible_check_mode
+
+  vars:
+    domain: homelab.sreafterhours.dev
+  
+  handlers:
+
+    - name: Restart Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+      become: true

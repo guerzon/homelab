@@ -1,0 +1,26 @@
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Ensure the playbook is running on all hosts
+      debug:
+        msg: "This playbook is running on {{ inventory_hostname }}"
+    - name: Check if the host is reachable
+      ping:
+    - name: Set SELinux to permissive
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+      become: true
+      notify: Reboot host
+    - name: Manage /etc/hosts
+      become: true
+      ansible.builtin.blockinfile:
+        path: /etc/hosts
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          192.168.133.131 server1
+          192.168.133.132 server2
+  handlers:
+    - name: Reboot host
+      become: true
+      reboot:

@@ -18,16 +18,6 @@ Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 
 ## GKE workloads
 
-### Management
-
-- [] Jenkins
-- [] ArgoCD
-
-### Monitoring and alerting
-
-- [] Prometheus
-- [] Grafana
-
 ### Applications
 
 [Vaultwarden](./applications/vaultwarden/), using:
@@ -38,3 +28,17 @@ Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 - [x] Call [Helm chart](https://github.com/guerzon/vaultwarden)
 - [] Nginx Ingress
 - [] DNS
+
+## DevOps tooling using Ansible
+
+Fought the urge to create an Ansible role for each of these.
+
+### CI/CD
+
+- [] Jenkins
+
+### Monitoring and alerting
+
+- [] Prometheus
+- [] Grafana
+- [] Elasticsearch

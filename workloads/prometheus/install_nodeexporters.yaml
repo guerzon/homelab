@@ -1,0 +1,9 @@
+---
+- hosts: nodes
+  become: true
+  tasks:
+    - name: Install and configure node exporters
+      ansible.builtin.include_role:
+        name: prometheus.prometheus.node_exporter
+      vars:
+        node_exporter_version: "1.9.1"
