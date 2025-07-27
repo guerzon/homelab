@@ -2,7 +2,7 @@ domain: "https://vaultwarden.homelab.sreafterhours.dev"
 
 signupsVerify: true
 
-replicas: 5
+replicas: 1
 
 service:
   sessionAffinity: ClientIP
@@ -10,16 +10,11 @@ service:
     clientIP:
       timeoutSeconds: 10800
 
-# ingress:
-#   enabled: true
-#   hostname: vaultwarden.homelab.sreafterhours.dev
-#   class: "alb"
-#   nginxIngressAnnotations: false
-  # additionalAnnotations:
-  #   alb.ingress.kubernetes.io/scheme: internet-facing
-  #   alb.ingress.kubernetes.io/target-type: ip
-  #   alb.ingress.kubernetes.io/tags: Environment=test,Team=POC
-  #   alb.ingress.kubernetes.io/certificate-arn: "<ARN>"
+ingress:
+  enabled: true
+  hostname: vaultwarden.homelab.sreafterhours.dev
+  nginxIngressAnnotations: true
+  tlsSecret: homelab-cert
 
 database:
   type: postgres
@@ -41,3 +36,7 @@ resources:
   requests:
     cpu: 100m
     memory: 256Mi
+
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1 
