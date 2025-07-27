@@ -18,7 +18,7 @@
 
     - name: Copy certificates and keys
       ansible.builtin.copy:
-        src: "{{ item.file }}"
+        src: "../common/files/{{ item.file }}"
         dest: "/etc/nginx/{{ item.file }}"
         mode: "{{ item.perm }}"
       become: true

@@ -16,3 +16,6 @@ server1.homelab.sreafterhours.dev
 
 [proxy]
 server1.homelab.sreafterhours.dev
+
+[postgres]
+server2.homelab.sreafterhours.dev
