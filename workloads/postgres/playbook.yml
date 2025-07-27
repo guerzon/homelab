@@ -1,0 +1,116 @@
+- hosts: postgres
+  gather_facts: no
+  tasks:
+
+    - name: Remove the default Postgres DNF modules
+      ansible.builtin.command: dnf -qy module disable postgresql
+      become: true
+
+    - name: Import the RPM key
+      ansible.builtin.rpm_key:
+        key: https://ftp.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
+        state: present
+      become: true
+
+    - name: Install the repository
+      ansible.builtin.dnf:
+        name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
+        state: present
+      become: true
+
+    - name: Install PostgreSQL 17
+      ansible.builtin.dnf:
+        name: postgresql17-server
+        state: present
+      become: true
+
+    - name: Initialize the database
+      ansible.builtin.command: /usr/pgsql-17/bin/postgresql-17-setup initdb
+      args:
+        creates: "{{ postgres_data }}/PG_VERSION"
+      become: true
+
+    - name: Copy certificates and keys
+      ansible.builtin.copy:
+        src: "../common/files/{{ item.file }}"
+        dest: "{{ postgres_data }}/{{ item.file }}"
+        mode: "{{ item.perm }}"
+        owner: postgres
+        group: postgres
+      become: true
+      no_log: true
+      loop:
+        - { file: "{{ domain }}.crt", perm: '0644' }
+        - { file: "{{ domain }}.pem", perm: '0600' }
+      notify: Restart PostgreSQL
+
+    - name: Configure PostgreSQL
+      ansible.builtin.template:
+        src: postgresql.conf
+        dest: "{{ postgres_data }}/postgresql.conf"
+        mode: '0600'
+        owner: postgres
+        group: postgres
+      become: true
+      notify: Restart PostgreSQL
+
+    - name: Start and enable the service
+      ansible.builtin.systemd:
+        name: postgresql-17
+        state: started
+        enabled: yes
+      become: true
+
+    - name: Enable firewall
+      ansible.posix.firewalld:
+        port: 5432/tcp
+        permanent: true
+        immediate: true
+        state: enabled
+      become: true
+
+    - name: Install dependencies
+      ansible.builtin.dnf:
+        name:
+          - python3-psycopg2
+        state: present
+      become: true
+
+    ############### SonarQube ###############
+
+    - name: Create the SonarQube database
+      community.postgresql.postgresql_db:
+        name: sonarqube
+        comment: SonarQube database
+      become: true
+      become_user: postgres
+
+    - name: Change postgres user's password
+      community.postgresql.postgresql_user:
+        name: postgres
+        password: Ch@ngem3
+      become: true
+      become_user: postgres
+
+    - name: Allow connections from local subnet
+      community.postgresql.postgresql_pg_hba:
+        dest: /var/lib/pgsql/17/data/pg_hba.conf
+        contype: hostssl
+        users: postgres
+        source: "192.168.133.0/24"
+        databases: postgres,sonarqube
+      become: true
+      become_user: postgres
+      notify: Restart PostgreSQL
+
+  vars:
+    domain: homelab.sreafterhours.dev
+    postgres_data: /var/lib/pgsql/17/data
+
+  handlers:
+
+    - name: Restart PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql-17
+        state: restarted
+      become: true
