@@ -12,14 +12,6 @@
         state: permissive
       become: true
       notify: Reboot host
-    - name: Manage /etc/hosts
-      become: true
-      ansible.builtin.blockinfile:
-        path: /etc/hosts
-        marker: "# {mark} ANSIBLE MANAGED BLOCK"
-        block: |
-          192.168.133.131 server1
-          192.168.133.132 server2
   handlers:
     - name: Reboot host
       become: true

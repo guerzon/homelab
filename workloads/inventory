@@ -10,6 +10,8 @@ server2.homelab.sreafterhours.dev
 [nodes]
 server1.homelab.sreafterhours.dev
 server2.homelab.sreafterhours.dev
+computadora.homelab.sreafterhours.dev
+winwin.homelab.sreafterhours.dev ansible_user=Administrator ansible_shell_type=powershell
 
 [jenkins]
 server1.homelab.sreafterhours.dev

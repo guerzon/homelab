@@ -1,7 +1,7 @@
 ---
 - hosts: prometheus
   become: true
-  tasks:
+  pre_tasks:
     - name: Hack | Create the user
       ansible.builtin.user:
         name: "prometheus"
@@ -11,7 +11,7 @@
         create_home: true
     - name: Hack | Copy the certificate and key file
       ansible.builtin.copy:
-        src: "/data/Google-Cloud/homelab.sreafterhours.dev.{{ item }}"
+        src: "/data/Projects/homelab/local/homelab.sreafterhours.dev.{{ item }}"
         dest: "/etc/prometheus"
         owner: "prometheus"
         group: "prometheus"
@@ -19,6 +19,7 @@
       with_items:
         - "pem"
         - "crt"
+  tasks:
     - name: Install and configure Prometheus
       ansible.builtin.include_role:
         name: prometheus.prometheus.prometheus
@@ -26,12 +27,38 @@
         prometheus_version: "3.4.2"
         # prometheus_config_flags:
         #   - "--web.enable-lifecycle"
+        prometheus_global:
+          scrape_interval: 1s
+        prometheus_scrape_configs:
+          - job_name: "prometheus"
+            scheme: https
+            metrics_path: "{{ prometheus_metrics_path }}"
+            static_configs:
+              - targets:
+                  - "server1.homelab.sreafterhours.dev:9090"
+          - job_name: "node"
+            scheme: https
+            file_sd_configs:
+              - files:
+                  - "{{ prometheus_config_dir }}/file_sd/node.yml"
+          - job_name: "applications"
+            file_sd_configs:
+              - files:
+                  - "{{ prometheus_config_dir }}/file_sd/applications.yml"
         prometheus_targets:
           node:
             - targets:
-                - "localhost:9100"
+                - "server1.homelab.sreafterhours.dev:9100"
+                - "server2.homelab.sreafterhours.dev:9100"
+                - "computadora.homelab.sreafterhours.dev:9100"
+                - "winwin.homelab.sreafterhours.dev:9182"
               labels:
                 job: node_exporter
+          applications:
+            - targets:
+                - "computadora.homelab.sreafterhours.dev:8081"
+              labels:
+                environment: development
         prometheus_web_config:
           tls_server_config:
             cert_file: /etc/prometheus/homelab.sreafterhours.dev.crt
