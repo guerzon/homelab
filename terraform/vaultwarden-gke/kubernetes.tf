@@ -3,7 +3,7 @@
 
 module "gke" {
   source               = "guerzon/gcp/modules//kubernetes"
-  version              = "1.1.0"
+  version              = "1.2.0"
   cluster_name         = "homelab"
   network              = module.vpc.network
   subnet               = "${var.region}-subnet"
@@ -15,6 +15,10 @@ module "gke" {
   scopes = [
     "https://www.googleapis.com/auth/cloud-platform",
     "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+  ]
+  project_id = var.project_id
+  roles = [
+    "roles/dns.admin"
   ]
   depends_on = [
     module.subnet

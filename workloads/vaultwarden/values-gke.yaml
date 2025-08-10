@@ -17,17 +17,22 @@ ingress:
   tlsSecret: homelab-cert
 
 database:
-  type: postgres
+  type: postgresql
+  existingSecret: prod-db-creds
+  existingSecretUserKey: pgusername
+  existingSecretPasswordKey: pgpassword
 
 storage:
   data:
     name: "vaultwarden-data"
     size: "10Gi"
     accessMode: "ReadWriteOnce"
+    keepPvc: true
   attachments:
     name: "vaultwarden-files"
     size: "10Gi"
     accessMode: "ReadWriteOnce"
+    keepPvc: true
 
 resources:
   limits:

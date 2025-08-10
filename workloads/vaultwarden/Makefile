@@ -5,6 +5,9 @@ setup:
 	kubectl create secret -n vaultwarden tls homelab-cert \
 		--key /data/Projects/homelab/local/homelab.sreafterhours.dev.pem \
 		--cert /data/Projects/homelab/local/homelab.sreafterhours.dev.crt
+	kubectl -n vaultwarden create secret generic prod-db-creds \
+		--from-literal=pgusername=${DB_USER} \
+		--from-literal=pgpassword=${DB_PASSWORD}
 
 template:
 	if [ -z "$$DB_HOST" ]; then \
@@ -15,8 +18,6 @@ template:
 		homelab-release /data/Projects/vaultwarden/vaultwarden/charts/vaultwarden \
 		--set database.host=${DB_HOST} \
 		--set database.dbName=${DB_NAME} \
-		--set database.username=${DB_USER} \
-		--set database.password=${DB_PASSWORD} \
 		--set adminToken.value=${ADMIN_TOKEN} \
 		-f values-gke.yaml
 
@@ -29,8 +30,6 @@ upgrade:
 		homelab-release /data/Projects/vaultwarden/vaultwarden/charts/vaultwarden \
 		--set database.host=${DB_HOST} \
 		--set database.dbName=${DB_NAME} \
-		--set database.username=${DB_USER} \
-		--set database.password=${DB_PASSWORD} \
 		--set adminToken.value=${ADMIN_TOKEN} \
 		-f values-gke.yaml
 
