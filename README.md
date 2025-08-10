@@ -2,7 +2,7 @@
 
 ## Terraform
 
-Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
+GCP Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 
 - [x] Registry
 - [x] Network
@@ -26,19 +26,27 @@ Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 - [x] Cloud SQL PostgreSQL, single-region
 - [x] GKE Standard Cluster, single-region
 - [x] Call [Helm chart](https://github.com/guerzon/vaultwarden)
-- [] Nginx Ingress
-- [] DNS
+- [x] Nginx Ingress
+- [x] External-DNS
 
 ## DevOps tooling using Ansible
 
 Fought the urge to create an Ansible role for each of these.
 
+### Infra
+
+- [x] PostgreSQL
+
 ### CI/CD
 
-- [] Jenkins
+- [x] GitLab CI
+
+### Security
+
+- [-] Sonarqube
 
 ### Monitoring and alerting
 
-- [] Prometheus
-- [] Grafana
-- [] Elasticsearch
+- [x] Prometheus
+- [-] Grafana
+- [-] Elasticsearch

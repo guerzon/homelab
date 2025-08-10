@@ -15,7 +15,7 @@ template:
 		exit 1; \
 	fi
 	helm template -n vaultwarden \
-		homelab-release /data/Projects/vaultwarden/vaultwarden/charts/vaultwarden \
+		homelab-release vaultwarden/vaultwarden \
 		--set database.host=${DB_HOST} \
 		--set database.dbName=${DB_NAME} \
 		--set adminToken.value=${ADMIN_TOKEN} \
@@ -27,7 +27,7 @@ upgrade:
 		exit 1; \
 	fi
 	helm upgrade -i -n vaultwarden \
-		homelab-release /data/Projects/vaultwarden/vaultwarden/charts/vaultwarden \
+		homelab-release vaultwarden/vaultwarden \
 		--set database.host=${DB_HOST} \
 		--set database.dbName=${DB_NAME} \
 		--set adminToken.value=${ADMIN_TOKEN} \
