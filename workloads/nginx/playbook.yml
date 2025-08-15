@@ -1,4 +1,4 @@
-- hosts: proxy
+- hosts: nginx
   gather_facts: no
   tasks:
     
@@ -36,6 +36,7 @@
       become: true
       with_items:
         - jenkins
+        - prometheus
       notify: Restart Nginx
 
     - name: Ensure Nginx is started and enabled

@@ -1,11 +1,17 @@
+[nginx]
+server1.homelab.sreafterhours.dev
+
 [prometheus]
 server1.homelab.sreafterhours.dev
 
 [alertmanager]
-server2.homelab.sreafterhours.dev
+server1.homelab.sreafterhours.dev
 
 [grafana]
-server2.homelab.sreafterhours.dev
+server1.homelab.sreafterhours.dev
+
+[postgres]
+server1.homelab.sreafterhours.dev
 
 [nodes]
 server1.homelab.sreafterhours.dev
@@ -14,10 +20,10 @@ computadora.homelab.sreafterhours.dev
 winwin.homelab.sreafterhours.dev ansible_user=Administrator ansible_shell_type=powershell
 
 [jenkins]
-server1.homelab.sreafterhours.dev
+server2.homelab.sreafterhours.dev
 
-[proxy]
-server1.homelab.sreafterhours.dev
+[jfrog]
+server2.homelab.sreafterhours.dev
 
-[postgres]
+[sonarqube]
 server2.homelab.sreafterhours.dev

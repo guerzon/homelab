@@ -27,7 +27,6 @@
       ansible.builtin.dnf:
         name: jenkins
         state: latest
-        bugfix: true
       become: true
 
     - name: Start and enable Jenkins
@@ -58,7 +57,7 @@
 
     - name: Enable the firewall for Jenkins HTTPs
       ansible.posix.firewalld:
-        service: https
+        port: 8080/tcp
         permanent: true
         immediate: true
         state: enabled
