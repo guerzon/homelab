@@ -1,40 +1,68 @@
-## - VPC and subnet in Singapore region
-## - Cloud Router and NAT Gateway for outbound access
-
-module "vpc" {
-  source      = "guerzon/gcp/modules//network"
-  version     = "1.0.0"
-  environment = var.environment
+data "terraform_remote_state" "common_gcp" {
+  backend = "gcs"
+  config = {
+    bucket = "terraform-gcp-portfolio-465603"
+    prefix = "terraform/common"
+  }
 }
 
-module "subnet" {
-  source  = "guerzon/gcp/modules//subnets"
-  version = "1.0.0"
-  network = module.vpc.network
-  subnets = [
-    {
-      name       = "${var.region}-subnet"
-      region     = var.region
-      cidr_range = "10.0.0.0/16"
-    }
+module "gke" {
+  source               = "guerzon/gcp/modules//kubernetes"
+  version              = "1.3.0"
+  cluster_name         = "homelab"
+  network              = data.terraform_remote_state.common_gcp.outputs.vpc_network
+  subnet               = "singapore-subnet"
+  location             = var.preferred_zone # zonal cluster
+  node_pool_type       = "preemptible"
+  node_pool_count      = 2
+  enable_private_nodes = true
+  deletion_protection  = false
+  scopes = [
+    "https://www.googleapis.com/auth/cloud-platform",
+    "https://www.googleapis.com/auth/ndev.clouddns.readwrite"
+  ]
+  project_id = var.project_id
+  roles = [
+    "roles/dns.admin"
   ]
 }
 
-module "router" {
-  source      = "guerzon/gcp/modules//router"
-  version     = "1.0.0"
-  router_name = "${var.region}-router"
-  network     = module.vpc.network_name
-  region      = var.region
-  bgp_asn     = 64600
+data "google_client_config" "default" {}
+
+provider "helm" {
+  kubernetes = {
+    host                   = module.gke.cluster_endpoint
+    token                  = data.google_client_config.default.access_token
+    cluster_ca_certificate = base64decode(module.gke.cluster_ca_certificate)
+  }
 }
 
-module "nat_gateway" {
-  source           = "guerzon/gcp/modules//natgateway"
-  version          = "1.0.0"
-  nat_gateway_name = "${var.region}-ngw"
-  router_name      = "${var.region}-router"
-  region           = var.region
-  network_tier     = "STANDARD"
-  depends_on       = [module.router]
+resource "helm_release" "nginx_ingress_controller" {
+  name             = "ingress-nginx"
+  repository       = "https://kubernetes.github.io/ingress-nginx"
+  chart            = "ingress-nginx"
+  namespace        = "ingress-nginx"
+  create_namespace = true
+  version          = "4.13.0"
+
+  cleanup_on_fail = true
+  force_update    = true
+  lint            = true
+}
+
+resource "helm_release" "external_dns" {
+  name       = "external-dns"
+  repository = "https://kubernetes-sigs.github.io/external-dns/"
+  chart      = "external-dns"
+  version    = "1.18.0"
+
+  cleanup_on_fail = true
+  force_update    = true
+  lint            = true
+
+  set = [
+    { name = "provider.name", value = "google" },
+    { name = "domainFilters[0]", value = var.public_zone_dns },
+  ]
+
 }

@@ -36,10 +36,11 @@ Fought the urge to create an Ansible role for each of these.
 ### Infra
 
 - [x] PostgreSQL
+- [-] JFrog Artifactory
 
 ### CI/CD
 
-- [x] GitLab CI
+- [x] Jenkins
 
 ### Security
 

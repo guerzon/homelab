@@ -1,4 +1,4 @@
-output "dns_zone_nameservers" {
-  description = "The nameservers to delegate the zone."
-  value       = module.dns_zone.name_servers
+output "sql_private_ip" {
+  description = "The private IP address of the PostgreSQL instance."
+  value       = module.postgres.internal_ip
 }

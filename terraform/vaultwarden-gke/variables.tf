@@ -1,37 +1,34 @@
-variable "environment" {
-  default = "non-production"
-}
-
 variable "region" {
   default = "asia-southeast1"
+  type    = string
 }
 
 variable "preferred_zone" {
   default = "asia-southeast1-a"
+  type    = string
 }
 
 variable "my_ip" {
   description = "My network's external IP address."
+  type        = string
 }
 
-variable "project_id" {}
+variable "project_id" {
+  type = string
+}
 
 variable "vaultwarden_database_name" {
-  default = null
+  type = string
 }
 
 variable "vaultwarden_database_user" {
-  default = null
+  type = string
 }
 
 variable "vaultwarden_database_password" {
-  default = null
+  type = string
 }
 
 variable "public_zone_dns" {
-  default = null
-}
-
-variable "private_zone_dns" {
-  default = null
+  type = string
 }

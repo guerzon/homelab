@@ -25,7 +25,7 @@ terraform {
   }
   backend "gcs" {
     bucket = "terraform-gcp-portfolio-465603"
-    prefix = "terraform/non-production"
+    prefix = "terraform/common"
   }
 }
 

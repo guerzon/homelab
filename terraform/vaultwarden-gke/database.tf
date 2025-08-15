@@ -3,10 +3,10 @@
 
 module "postgres" {
   source                      = "guerzon/gcp/modules//sqlinstance"
-  version                     = "1.1.1"
+  version                     = "1.3.0"
   instance_name               = "portfolio"
   database_version            = "POSTGRES_17"
-  network_name                = module.vpc.network
+  network_name                = data.terraform_remote_state.common_gcp.outputs.vpc_network
   availability_type           = "ZONAL"
   region                      = var.region
   zone                        = var.preferred_zone
@@ -27,7 +27,7 @@ module "postgres" {
 
 module "vaultwarden_db" {
   source            = "guerzon/gcp/modules//database"
-  version           = "1.0.0"
+  version           = "1.3.0"
   sql_instance_name = module.postgres.sql_instance_name
   database_name     = var.vaultwarden_database_name
   database_user     = var.vaultwarden_database_user
