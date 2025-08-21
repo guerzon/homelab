@@ -76,31 +76,93 @@
         state: present
       become: true
 
-    ############### SonarQube ###############
+    ############### Configure the instance ###############
 
-    - name: Create the SonarQube database
-      community.postgresql.postgresql_db:
-        name: sonarqube
-        comment: SonarQube database
-      become: true
-      become_user: postgres
-
+    ########## Postgres user ##########
     - name: Change postgres user's password
       community.postgresql.postgresql_user:
         name: postgres
-        password: Ch@ngem3
+        password: "{{ postgres_pass }}"
       become: true
       become_user: postgres
-
-    ############### pg_hba.conf ###############
-
+    ########## Databases ##########
+    - name: Create the SonarQube database
+      community.postgresql.postgresql_db:
+        name: "{{ sonarqube_db }}"
+        comment: SonarQube database
+      become: true
+      become_user: postgres
+    - name: Create the GitLab database
+      community.postgresql.postgresql_db:
+        name: gitlab
+        comment: GitLab database
+      become: true
+      become_user: postgres
+    ########## pg_hba.conf ##########
     - name: Allow connections from local subnet
       community.postgresql.postgresql_pg_hba:
         dest: /var/lib/pgsql/17/data/pg_hba.conf
         contype: hostssl
-        users: postgres
+        users: "postgres"
         source: "192.168.133.0/24"
-        databases: postgres,sonarqube
+        databases: "postgres,{{ sonarqube_db }},{{ gitlab_db }}"
+      become: true
+      become_user: postgres
+      notify: Restart PostgreSQL
+    - meta: flush_handlers
+
+    ############### Roles ###############
+
+    ########## SonarQube ##########
+    - name : Create the SonarQube user
+      community.postgresql.postgresql_user:
+        name: "{{ sonarqube_user }}"
+        password: "{{ sonarqube_pass }}"
+      become: true
+      become_user: postgres
+    - name: GRANT ALL PRIVILEGES ON DATABASE {{ sonarqube_db }} TO {{ sonarqube_user }}
+      community.postgresql.postgresql_privs:
+        login_db: postgres
+        privs: "ALL"
+        type: "database"
+        obj: "{{ sonarqube_db }}"
+        role: "{{ sonarqube_user }}"
+      become: true
+      become_user: postgres
+    - name: Allow connections for SonarQube user
+      community.postgresql.postgresql_pg_hba:
+        dest: /var/lib/pgsql/17/data/pg_hba.conf
+        contype: hostssl
+        users: "{{ sonarqube_user }}"
+        source: "192.168.133.0/24"
+        databases: sonarqube
+      become: true
+      become_user: postgres
+      notify: Restart PostgreSQL
+
+    ########## GitLab ##########
+    - name : Create the GitLab user
+      community.postgresql.postgresql_user:
+        name: "{{ gitlab_user }}"
+        password: "{{ gitlab_pass }}"
+      become: true
+      become_user: postgres
+    - name: GRANT ALL PRIVILEGES ON DATABASE {{ gitlab_db }} TO {{ gitlab_user }}
+      community.postgresql.postgresql_privs:
+        login_db: postgres
+        privs: "ALL"
+        type: "database"
+        obj: "{{ gitlab_db }}"
+        role: "{{ gitlab_user }}"
+      become: true
+      become_user: postgres
+    - name: Allow connections for GitLab user
+      community.postgresql.postgresql_pg_hba:
+        dest: /var/lib/pgsql/17/data/pg_hba.conf
+        contype: hostssl
+        users: "{{ gitlab_user }}"
+        source: "192.168.133.0/24"
+        databases: gitlab
       become: true
       become_user: postgres
       notify: Restart PostgreSQL
@@ -108,6 +170,31 @@
   vars:
     domain: homelab.sreafterhours.dev
     postgres_data: /var/lib/pgsql/17/data
+    postgres_pass: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      64333632346432383932356565386161376331636539383535633532366633333761636261363864
+      3965626338303332393935623466323531633065616562640a346434633635396266353963343030
+      38373861666264663631386331346631643137663936626239333739336538663037613638393762
+      3430323734663865660a666462646465326434623761353937343963376237313234643436626236
+      3732
+    sonarqube_db: "sonarqube"
+    sonarqube_user: "sonarqube"
+    sonarqube_pass: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      30323662666564326563663432613738666538376238303234333962633430656639653033393636
+      3665666563646436323631366463316238353233363664360a336136386630353466333633636466
+      66613166633037313236343365313736346166373135353161633531303533646365666539316435
+      3936393539353530360a376463393666633962366565396531313538323335393431316138613830
+      6266
+    gitlab_db: "gitlab"
+    gitlab_user: "gitlab"
+    gitlab_pass: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      31643064363838303132373231313565366233316164656235666264316461313330313235386565
+      3763333262653337393539366635323935653864343465310a353961326233386162613431356364
+      61663836343139373433663936636330333261373135633166346234353262663238623838386566
+      6563363265373839300a646137316361636164363463613332353261316530316133333739373736
+      6437
 
   handlers:
 
