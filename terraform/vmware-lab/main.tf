@@ -38,6 +38,16 @@ module "dns_record_server2" {
   record_ttl     = 60
 }
 
+module "dns_record_server3" {
+  source         = "guerzon/gcp/modules//dnsrecord"
+  version        = "1.3.0"
+  managed_zone   = data.terraform_remote_state.common_gcp.outputs.dns_zone
+  record_name    = "server3.${var.public_zone_dns}"
+  record_type    = "A"
+  record_content = ["192.168.133.133"]
+  record_ttl     = 60
+}
+
 module "dns_record_winwin" {
   source         = "guerzon/gcp/modules//dnsrecord"
   version        = "1.3.0"
@@ -81,6 +91,16 @@ module "dns_record_postgres" {
 }
 
 ##### CI/CD #####
+
+module "dns_record_gitlab" {
+  source         = "guerzon/gcp/modules//dnsrecord"
+  version        = "1.3.0"
+  managed_zone   = data.terraform_remote_state.common_gcp.outputs.dns_zone
+  record_name    = "gitlab.${var.public_zone_dns}"
+  record_type    = "CNAME"
+  record_content = ["server3.${var.public_zone_dns}"]
+  record_ttl     = 60
+}
 
 module "dns_record_jenkins" {
   source         = "guerzon/gcp/modules//dnsrecord"
