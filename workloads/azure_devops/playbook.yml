@@ -19,6 +19,9 @@
           - ncat
           - git
           - tree
+          - ca-certificates
+          - curl
+          - gpg
         state: present
         update_cache: true
       become: true
@@ -52,9 +55,54 @@
       ansible.builtin.file:
         path: "{{ tools_directory }}"
         state: directory
-        recurse: yes
         mode: "0755"
   
+    ##### Docker #####
+
+    - name: Cleanup conflicting packages
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-doc
+          - docker-compose
+          - docker-compose-v2
+          - podman-docker
+          - containerd
+          - runc
+        state: absent
+      become: true
+
+    - name: Install the APT key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      become: true
+    - name: Configure the repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu noble stable"
+        state: present
+      become: true
+
+    - name: Install the Docker packages
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+      become: true
+
+    - name: Add guerzonix user to the docker group
+      ansible.builtin.user:
+        name: guerzonix
+        groups: docker
+        append: true
+      become: true
+
+    - meta: end_play
+
     ##### Python #####
 
     - name: Download Python releases
