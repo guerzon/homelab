@@ -4,25 +4,23 @@ module "vpc" {
   environment = var.environment
 }
 
-module "subnet" {
+module "subnets" {
   source  = "guerzon/gcp/modules//subnets"
   version = "1.3.0"
   network = module.vpc.network
   subnets = [
     {
-      name       = "singapore-subnet"
+      name       = var.region
       region     = var.region
       cidr_range = "10.0.0.0/16"
     }
   ]
 }
 
-module "dns_zone" {
+module "dns_zone_sreafterhours" {
   source           = "guerzon/gcp/modules//dnszone"
   version          = "1.3.0"
   zone_name        = var.environment
-  zone_dns_name    = var.public_zone_dns
-  zone_description = "Homelab DNS zone"
-  zone_type        = "public"
-  cloud_logging    = true
+  zone_dns_name    = "sreafterhours.dev."
+  zone_description = "Delegated ${var.environment} DNS zone"
 }

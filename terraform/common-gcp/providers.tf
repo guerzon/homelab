@@ -1,11 +1,12 @@
-# resource "google_storage_bucket" "terraform" {
-#   name     = "terraform-${var.project_id}"
-#   location = "Asia"
-#   versioning {
-#     enabled = true
-#   }
-#   uniform_bucket_level_access = true
-# }
+resource "google_storage_bucket" "terraform" {
+  name     = "terraform-sreafterhours-dev"
+  location = "Asia"
+  versioning {
+    enabled = true
+  }
+  uniform_bucket_level_access = true
+  force_destroy               = false
+}
 
 terraform {
   required_version = "~>1.5"
@@ -14,25 +15,13 @@ terraform {
       source  = "hashicorp/google"
       version = "~>6.37"
     }
-    google-beta = {
-      source  = "hashicorp/google-beta"
-      version = "~>6.41"
-    }
-    helm = {
-      source  = "hashicorp/helm"
-      version = "~>3.0"
-    }
   }
   backend "gcs" {
-    bucket = "terraform-gcp-portfolio-465603"
-    prefix = "terraform/common"
+    bucket = "terraform-sreafterhours-dev"
+    prefix = "terraform/common-gcp"
   }
 }
 
 provider "google" {
-  project = var.project_id
-}
-
-provider "google-beta" {
   project = var.project_id
 }

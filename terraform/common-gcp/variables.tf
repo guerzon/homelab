@@ -11,7 +11,3 @@ variable "region" {
   default = "asia-southeast1"
   type    = string
 }
-
-variable "public_zone_dns" {
-  type = string
-}
