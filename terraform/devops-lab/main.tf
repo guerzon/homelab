@@ -23,12 +23,13 @@ module "node1" {
   }
   metadata_startup_script = <<-EOF
     #!/bin/bash
-    dnf install -y lvm2
+    apt-get update && apt-get install -y lvm2 xfsprogs
     mkdir /data
     echo "/dev/mapper/vgdata-lvdata /data xfs defaults 0 0" | tee -a /etc/fstab
     systemctl daemon-reload
     vgchange -ay
     mount /data
+    chown guerzonix:guerzonix /data
     EOF
   tags                    = var.tags
 }

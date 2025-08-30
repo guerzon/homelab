@@ -1,26 +1,21 @@
 - hosts: all
-  gather_facts: no
+  gather_facts: true
   tasks:
 
-    - name: Ensure the playbook is running on all hosts
-      debug:
-        msg: "This playbook is running on {{ inventory_hostname }}"
-
-    - name: Check if the host is reachable
-      ping:
-    
     - name: Install tools
       ansible.builtin.dnf:
         name:
-          - policycoreutils-python-utils-
+          - policycoreutils-python-utils
         state: present
       become: true
+      when: ansible_os_family == "RedHat"
 
     # - name: Set SELinux to permissive
     #   ansible.posix.selinux:
     #     policy: targeted
     #     state: permissive
     #   become: true
+    #   when: ansible_os_family == "RedHat"
     #   notify: Reboot host
 
   handlers:

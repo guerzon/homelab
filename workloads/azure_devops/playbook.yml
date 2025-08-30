@@ -1,0 +1,99 @@
+- hosts: azure_agents
+
+  tasks:
+
+    - name: Install tools (RedHat)
+      ansible.builtin.dnf:
+        name:
+          - wget
+          - nc
+          - git
+        state: present
+      become: true
+      when: ansible_os_family == "RedHat"
+
+    - name: Install tools (Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - wget
+          - ncat
+          - git
+          - tree
+        state: present
+        update_cache: true
+      become: true
+      when: ansible_os_family == "Debian"
+
+    - name: Ensure {{ azure_agent_path }} exists
+      ansible.builtin.file:
+        path: "{{ azure_agent_path }}"
+        state: directory
+        mode: "0755"
+
+    - name: Download the Azure agent
+      ansible.builtin.get_url:
+        url: "https://download.agent.dev.azure.com/agent/{{ azure_agent_version }}/vsts-agent-linux-x64-{{ azure_agent_version }}.tar.gz"
+        dest: "{{ downloads_directory }}/vsts-agent-linux-x64-{{ azure_agent_version }}.tar.gz"
+        mode: "0644"
+      register: download_agent
+
+    - name: Extract the Azure agent
+      ansible.builtin.unarchive:
+        src: "{{ downloads_directory }}/vsts-agent-linux-x64-{{ azure_agent_version }}.tar.gz"
+        dest: "{{ azure_agent_path }}"
+        remote_src: yes
+      when: download_agent.changed
+
+    - debug:
+        msg: "Agent has been newly-extracted. Kindly configure."
+      when: download_agent.changed
+
+    - name: Create the tools directory
+      ansible.builtin.file:
+        path: "{{ tools_directory }}"
+        state: directory
+        recurse: yes
+        mode: "0755"
+  
+    ##### Python #####
+
+    - name: Download Python releases
+      ansible.builtin.get_url:
+        url: "{{ item.value }}"
+        dest: "{{ downloads_directory }}"
+      loop: "{{ python_releases_url | dict2items }}"
+      register: download_python
+
+    - name: Create the Python tools directories
+      ansible.builtin.file:
+        path: "{{ python_tools_directory }}/{{ item.key }}/x64"
+        state: directory
+        mode: "0755"
+        recurse: yes
+      loop: "{{ python_releases_url | dict2items }}"
+
+    - name: Extract the Python releases
+      ansible.builtin.unarchive:
+        src: "{{ downloads_directory }}/python-{{ item.key }}-linux-24.04-x64.tar.gz"
+        dest: "{{ python_tools_directory }}/{{ item.key }}/x64/"
+        remote_src: yes
+      loop: "{{ python_releases_url | dict2items }}"
+      when: download_python.changed
+
+    - name: Create the x64.complete file
+      ansible.builtin.file:
+        path: "{{ python_tools_directory }}/{{ item.key }}/x64.complete"
+        state: touch
+      loop: "{{ python_releases_url | dict2items }}"
+
+  vars:
+
+    azure_agent_path: "/data/azure_agent"
+    azure_agent_version: "4.260.0"
+    downloads_directory: "/data/downloads"
+    tools_directory: "{{ azure_agent_path }}/_work/_tool"
+    python_tools_directory: "{{ tools_directory }}/Python"
+    python_releases_url:
+      "3.13.7": "https://github.com/actions/python-versions/releases/download/3.13.7-16980743123/python-3.13.7-linux-24.04-x64.tar.gz"
+      "3.12.11": "https://github.com/actions/python-versions/releases/download/3.12.11-15433310049/python-3.12.11-linux-24.04-x64.tar.gz"
+      "3.11.13": "https://github.com/actions/python-versions/releases/download/3.11.13-15433298024/python-3.11.13-linux-24.04-x64.tar.gz"

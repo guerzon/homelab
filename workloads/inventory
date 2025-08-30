@@ -19,6 +19,9 @@ node1.sreafterhours.dev
 ; computadora.homelab.sreafterhours.dev
 ; winwin.homelab.sreafterhours.dev ansible_user=Administrator ansible_shell_type=powershell
 
+[azure_agents]
+node1.sreafterhours.dev
+
 [jenkins]
 server2.homelab.sreafterhours.dev
 
