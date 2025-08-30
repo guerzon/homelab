@@ -1,6 +1,6 @@
 # module "router" {
 #   source      = "guerzon/gcp/modules//router"
-#   version     = "1.3.0"
+#   version     = "1.3.1"
 #   router_name = "${var.environment}-router"
 #   network     = module.vpc.network_name
 #   region      = var.region
@@ -9,7 +9,7 @@
 
 # module "nat_gateway" {
 #   source           = "guerzon/gcp/modules//natgateway"
-#   version          = "1.3.0"
+#   version          = "1.3.1"
 #   nat_gateway_name = "${var.environment}-natgateway"
 #   router_name      = "${var.environment}-router"
 #   region           = var.region

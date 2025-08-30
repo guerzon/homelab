@@ -1,19 +1,18 @@
 - hosts: nginx
-  gather_facts: no
+  gather_facts: yes
+  become: true
   tasks:
     
     - name: Install Nginx
       ansible.builtin.dnf:
         name: nginx
         state: latest
-      become: true
     
     - name: Configure Nginx
       ansible.builtin.copy:
         src: nginx.conf
         dest: /etc/nginx/nginx.conf
         mode: '0644'
-      become: true
       notify: Restart Nginx
 
     - name: Copy certificates and keys
@@ -21,7 +20,6 @@
         src: "../common/files/{{ item.file }}"
         dest: "/etc/nginx/{{ item.file }}"
         mode: "{{ item.perm }}"
-      become: true
       no_log: true
       loop:
         - { file: "{{ domain }}.crt", perm: '0644' }
@@ -33,10 +31,15 @@
         src: "{{ item }}.conf"
         dest: "/etc/nginx/conf.d/{{ item }}.conf"
         mode: '0644'
-      become: true
       with_items:
-        - jenkins
         - prometheus
+      notify: Restart Nginx
+
+    - name : Set SELinux boolean httpd_can_network_connect
+      ansible.posix.seboolean:
+        name: httpd_can_network_connect
+        state: true
+        persistent: true
       notify: Restart Nginx
 
     - name: Ensure Nginx is started and enabled
@@ -44,11 +47,10 @@
         name: nginx
         state: started
         enabled: true
-      become: true
       when: not ansible_check_mode
 
   vars:
-    domain: homelab.sreafterhours.dev
+    domain: sreafterhours.dev
   
   handlers:
 
@@ -56,4 +58,3 @@
       ansible.builtin.systemd:
         name: nginx
         state: restarted
-      become: true

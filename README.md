@@ -40,7 +40,7 @@ Fought the urge to create an Ansible role for each of these.
 
 ### CI/CD
 
-- [x] Jenkins
+<https://dev.azure.com/lesterguerzon/DevOps>
 
 ### Security
 

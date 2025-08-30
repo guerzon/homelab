@@ -1,48 +1,57 @@
 - hosts: postgres
   gather_facts: no
+  become: true
   tasks:
 
     - name: Remove the default Postgres DNF modules
       ansible.builtin.command: dnf -qy module disable postgresql
-      become: true
 
     - name: Import the RPM key
       ansible.builtin.rpm_key:
         key: https://ftp.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
         state: present
-      become: true
 
     - name: Install the repository
       ansible.builtin.dnf:
         name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
         state: present
-      become: true
 
     - name: Install PostgreSQL 17
       ansible.builtin.dnf:
         name: postgresql17-server
         state: present
-      become: true
+
+    - name : Ensure the persistent data directory is existing
+      ansible.builtin.file:
+        path: "/data/postgresql"
+        state: directory
+        owner: "postgres"
+        group: "postgres"
+        mode: "0700"
+
+    - name: Check packaged data directory
+      ansible.builtin.stat:
+        path: "{{ postgres_data }}"
+      register: datadir
+
+    - name : Delete the packaged data directory
+      ansible.builtin.file:
+        path: "{{ postgres_data }}"
+        state: absent
+      when: datadir.stat.isdir
+
+    - name: Create symbolic link {{ postgres_data }}
+      ansible.builtin.file:
+        src: "/data/postgresql"
+        dest: "{{ postgres_data }}"
+        owner: "postgres"
+        group: "postgres"
+        state: link
 
     - name: Initialize the database
       ansible.builtin.command: /usr/pgsql-17/bin/postgresql-17-setup initdb
       args:
         creates: "{{ postgres_data }}/PG_VERSION"
-      become: true
-
-    - name: Copy certificates and keys
-      ansible.builtin.copy:
-        src: "../common/files/{{ item.file }}"
-        dest: "{{ postgres_data }}/{{ item.file }}"
-        mode: "{{ item.perm }}"
-        owner: postgres
-        group: postgres
-      become: true
-      no_log: true
-      loop:
-        - { file: "{{ domain }}.crt", perm: '0644' }
-        - { file: "{{ domain }}.pem", perm: '0600' }
-      notify: Restart PostgreSQL
 
     - name: Configure PostgreSQL
       ansible.builtin.template:
@@ -51,7 +60,19 @@
         mode: '0600'
         owner: postgres
         group: postgres
-      become: true
+      notify: Restart PostgreSQL
+
+    - name: Copy certificates and keys
+      ansible.builtin.copy:
+        src: "../common/files/{{ item.file }}"
+        dest: "{{ postgres_data }}/{{ item.file }}"
+        mode: "{{ item.perm }}"
+        owner: postgres
+        group: postgres
+      no_log: true
+      loop:
+        - { file: "{{ domain }}.crt", perm: '0644' }
+        - { file: "{{ domain }}.pem", perm: '0600' }
       notify: Restart PostgreSQL
 
     - name: Start and enable the service
@@ -59,7 +80,6 @@
         name: postgresql-17
         state: started
         enabled: yes
-      become: true
 
     - name: Enable firewall
       ansible.posix.firewalld:
@@ -67,14 +87,13 @@
         permanent: true
         immediate: true
         state: enabled
-      become: true
 
     - name: Install dependencies
       ansible.builtin.dnf:
         name:
           - python3-psycopg2
+          - postgresql17-contrib
         state: present
-      become: true
 
     ############### Configure the instance ###############
 
@@ -83,20 +102,12 @@
       community.postgresql.postgresql_user:
         name: postgres
         password: "{{ postgres_pass }}"
-      become: true
       become_user: postgres
     ########## Databases ##########
     - name: Create the SonarQube database
       community.postgresql.postgresql_db:
         name: "{{ sonarqube_db }}"
         comment: SonarQube database
-      become: true
-      become_user: postgres
-    - name: Create the GitLab database
-      community.postgresql.postgresql_db:
-        name: gitlab
-        comment: GitLab database
-      become: true
       become_user: postgres
     ########## pg_hba.conf ##########
     - name: Allow connections from local subnet
@@ -104,9 +115,8 @@
         dest: /var/lib/pgsql/17/data/pg_hba.conf
         contype: hostssl
         users: "postgres"
-        source: "192.168.133.0/24"
-        databases: "postgres,{{ sonarqube_db }},{{ gitlab_db }}"
-      become: true
+        source: "{{ my_ip }}"
+        databases: "postgres,{{ sonarqube_db }}"
       become_user: postgres
       notify: Restart PostgreSQL
     - meta: flush_handlers
@@ -118,7 +128,6 @@
       community.postgresql.postgresql_user:
         name: "{{ sonarqube_user }}"
         password: "{{ sonarqube_pass }}"
-      become: true
       become_user: postgres
     - name: GRANT ALL PRIVILEGES ON DATABASE {{ sonarqube_db }} TO {{ sonarqube_user }}
       community.postgresql.postgresql_privs:
@@ -127,48 +136,19 @@
         type: "database"
         obj: "{{ sonarqube_db }}"
         role: "{{ sonarqube_user }}"
-      become: true
       become_user: postgres
     - name: Allow connections for SonarQube user
       community.postgresql.postgresql_pg_hba:
         dest: /var/lib/pgsql/17/data/pg_hba.conf
         contype: hostssl
         users: "{{ sonarqube_user }}"
-        source: "192.168.133.0/24"
+        source: "{{ my_ip }}"
         databases: sonarqube
-      become: true
-      become_user: postgres
-      notify: Restart PostgreSQL
-
-    ########## GitLab ##########
-    - name : Create the GitLab user
-      community.postgresql.postgresql_user:
-        name: "{{ gitlab_user }}"
-        password: "{{ gitlab_pass }}"
-      become: true
-      become_user: postgres
-    - name: GRANT ALL PRIVILEGES ON DATABASE {{ gitlab_db }} TO {{ gitlab_user }}
-      community.postgresql.postgresql_privs:
-        login_db: postgres
-        privs: "ALL"
-        type: "database"
-        obj: "{{ gitlab_db }}"
-        role: "{{ gitlab_user }}"
-      become: true
-      become_user: postgres
-    - name: Allow connections for GitLab user
-      community.postgresql.postgresql_pg_hba:
-        dest: /var/lib/pgsql/17/data/pg_hba.conf
-        contype: hostssl
-        users: "{{ gitlab_user }}"
-        source: "192.168.133.0/24"
-        databases: gitlab
-      become: true
       become_user: postgres
       notify: Restart PostgreSQL
 
   vars:
-    domain: homelab.sreafterhours.dev
+    domain: sreafterhours.dev
     postgres_data: /var/lib/pgsql/17/data
     postgres_pass: !vault |
       $ANSIBLE_VAULT;1.1;AES256
@@ -186,15 +166,13 @@
       66613166633037313236343365313736346166373135353161633531303533646365666539316435
       3936393539353530360a376463393666633962366565396531313538323335393431316138613830
       6266
-    gitlab_db: "gitlab"
-    gitlab_user: "gitlab"
-    gitlab_pass: !vault |
+    my_ip: !vault |
       $ANSIBLE_VAULT;1.1;AES256
-      31643064363838303132373231313565366233316164656235666264316461313330313235386565
-      3763333262653337393539366635323935653864343465310a353961326233386162613431356364
-      61663836343139373433663936636330333261373135633166346234353262663238623838386566
-      6563363265373839300a646137316361636164363463613332353261316530316133333739373736
-      6437
+      65653632303032396238393231663531633931666634363366336133633938323465343830316534
+      3762346666383132616131326238353033623635656363330a396233623435323330636437653937
+      32623832623264353764356130346631633535326663386365373536383532366536333433333437
+      6637613037663064380a623839393366343562373666353337633862623764623332666332663430
+      37336162373762333934303934666534326431353035336231353539376534316463
 
   handlers:
 
@@ -202,4 +180,3 @@
       ansible.builtin.systemd:
         name: postgresql-17
         state: restarted
-      become: true

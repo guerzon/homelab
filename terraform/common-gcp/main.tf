@@ -1,12 +1,12 @@
 module "vpc" {
   source      = "guerzon/gcp/modules//network"
-  version     = "1.3.0"
+  version     = "1.3.1"
   environment = var.environment
 }
 
 module "subnets" {
   source  = "guerzon/gcp/modules//subnets"
-  version = "1.3.0"
+  version = "1.3.1"
   network = module.vpc.network
   subnets = [
     {
@@ -19,7 +19,7 @@ module "subnets" {
 
 module "dns_zone_sreafterhours" {
   source           = "guerzon/gcp/modules//dnszone"
-  version          = "1.3.0"
+  version          = "1.3.1"
   zone_name        = var.environment
   zone_dns_name    = "sreafterhours.dev."
   zone_description = "Delegated ${var.environment} DNS zone"

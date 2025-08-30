@@ -1,26 +1,29 @@
 [nginx]
-server1.homelab.sreafterhours.dev
+node1.sreafterhours.dev
 
 [prometheus]
-server1.homelab.sreafterhours.dev
+node1.sreafterhours.dev
 
 [alertmanager]
-server1.homelab.sreafterhours.dev
+node1.sreafterhours.dev
 
 [grafana]
-server1.homelab.sreafterhours.dev
+node1.sreafterhours.dev
 
 [postgres]
-server1.homelab.sreafterhours.dev
+node1.sreafterhours.dev
 
 [nodes]
-server1.homelab.sreafterhours.dev
-server2.homelab.sreafterhours.dev
-computadora.homelab.sreafterhours.dev
-winwin.homelab.sreafterhours.dev ansible_user=Administrator ansible_shell_type=powershell
+node1.sreafterhours.dev
+; server2.homelab.sreafterhours.dev
+; computadora.homelab.sreafterhours.dev
+; winwin.homelab.sreafterhours.dev ansible_user=Administrator ansible_shell_type=powershell
 
 [jenkins]
 server2.homelab.sreafterhours.dev
+
+[gitlab]
+server3.homelab.sreafterhours.dev
 
 [jfrog]
 server2.homelab.sreafterhours.dev

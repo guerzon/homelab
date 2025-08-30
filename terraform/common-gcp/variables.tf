@@ -3,7 +3,7 @@ variable "project_id" {
 }
 
 variable "environment" {
-  default = "homelab"
+  default = "sreafterhours"
   type    = string
 }
 
