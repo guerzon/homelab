@@ -4,10 +4,11 @@
   tasks:
     
     - name: Install Nginx
-      ansible.builtin.dnf:
+      ansible.builtin.apt:
         name: nginx
         state: latest
-    
+        update_cache: yes
+
     - name: Configure Nginx
       ansible.builtin.copy:
         src: nginx.conf
@@ -41,6 +42,7 @@
         state: true
         persistent: true
       notify: Restart Nginx
+      when: ansible_os_family == "RedHat"
 
     - name: Ensure Nginx is started and enabled
       ansible.builtin.systemd:

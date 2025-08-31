@@ -56,7 +56,20 @@
         path: "{{ tools_directory }}"
         state: directory
         mode: "0755"
-  
+
+    ##### Java #####
+
+    - name: Install necessary packages
+      ansible.builtin.apt:
+        name:
+          - maven
+          - openjdk-21-jdk
+        state: present
+        update_cache: true
+      become: true
+
+    - meta: end_play
+
     ##### Docker #####
 
     - name: Cleanup conflicting packages

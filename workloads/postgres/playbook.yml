@@ -1,27 +1,25 @@
 - hosts: postgres
-  gather_facts: no
+  gather_facts: false
   become: true
   tasks:
 
-    - name: Remove the default Postgres DNF modules
-      ansible.builtin.command: dnf -qy module disable postgresql
-
-    - name: Import the RPM key
-      ansible.builtin.rpm_key:
-        key: https://ftp.postgresql.org/pub/repos/yum/keys/PGDG-RPM-GPG-KEY-RHEL
-        state: present
+    - name: Import the apt key
+      ansible.builtin.get_url:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+        dest: /etc/apt/keyrings/ACCC4CF8.asc
 
     - name: Install the repository
-      ansible.builtin.dnf:
-        name: 'https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm'
+      ansible.builtin.apt_repository:
+        repo: 'deb [signed-by=/etc/apt/keyrings/ACCC4CF8.asc] https://apt.postgresql.org/pub/repos/apt noble-pgdg main'
         state: present
 
     - name: Install PostgreSQL 17
-      ansible.builtin.dnf:
-        name: postgresql17-server
+      ansible.builtin.apt:
+        name: postgresql-17
         state: present
+        update_cache: true
 
-    - name : Ensure the persistent data directory is existing
+    - name : Ensure the persistent data directory is configured
       ansible.builtin.file:
         path: "/data/postgresql"
         state: directory
@@ -29,16 +27,10 @@
         group: "postgres"
         mode: "0700"
 
-    - name: Check packaged data directory
-      ansible.builtin.stat:
-        path: "{{ postgres_data }}"
-      register: datadir
-
-    - name : Delete the packaged data directory
-      ansible.builtin.file:
-        path: "{{ postgres_data }}"
-        state: absent
-      when: datadir.stat.isdir
+    # - name: Check packaged data directory
+    #   ansible.builtin.stat:
+    #     path: "{{ postgres_data }}"
+    #   register: datadir
 
     - name: Create symbolic link {{ postgres_data }}
       ansible.builtin.file:
@@ -47,16 +39,17 @@
         owner: "postgres"
         group: "postgres"
         state: link
+      # when: not datadir.stat.exists
 
     - name: Initialize the database
-      ansible.builtin.command: /usr/pgsql-17/bin/postgresql-17-setup initdb
+      ansible.builtin.command: /usr/bin/pg_createcluster 17 main
       args:
-        creates: "{{ postgres_data }}/PG_VERSION"
+        creates: "{{ postgres_data }}/17/main/PG_VERSION"
 
     - name: Configure PostgreSQL
       ansible.builtin.template:
         src: postgresql.conf
-        dest: "{{ postgres_data }}/postgresql.conf"
+        dest: "{{ postgres_config }}/17/main/postgresql.conf"
         mode: '0600'
         owner: postgres
         group: postgres
@@ -65,7 +58,7 @@
     - name: Copy certificates and keys
       ansible.builtin.copy:
         src: "../common/files/{{ item.file }}"
-        dest: "{{ postgres_data }}/{{ item.file }}"
+        dest: "{{ postgres_config }}/17/main/{{ item.file }}"
         mode: "{{ item.perm }}"
         owner: postgres
         group: postgres
@@ -77,22 +70,19 @@
 
     - name: Start and enable the service
       ansible.builtin.systemd:
-        name: postgresql-17
+        name: postgresql
         state: started
         enabled: yes
 
-    - name: Enable firewall
-      ansible.posix.firewalld:
-        port: 5432/tcp
-        permanent: true
-        immediate: true
-        state: enabled
+    - name: Run localedef
+      command: localedef -i en_US -f UTF-8 en_US.UTF-8
+      changed_when: false
 
     - name: Install dependencies
-      ansible.builtin.dnf:
+      ansible.builtin.apt:
         name:
           - python3-psycopg2
-          - postgresql17-contrib
+          - libpq-dev
         state: present
 
     ############### Configure the instance ###############
@@ -103,21 +93,27 @@
         name: postgres
         password: "{{ postgres_pass }}"
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
     ########## Databases ##########
     - name: Create the SonarQube database
       community.postgresql.postgresql_db:
         name: "{{ sonarqube_db }}"
         comment: SonarQube database
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
     ########## pg_hba.conf ##########
     - name: Allow connections from local subnet
       community.postgresql.postgresql_pg_hba:
-        dest: /var/lib/pgsql/17/data/pg_hba.conf
+        dest: /etc/postgresql/17/main/pg_hba.conf
         contype: hostssl
         users: "postgres"
         source: "{{ my_ip }}"
         databases: "postgres,{{ sonarqube_db }}"
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
       notify: Restart PostgreSQL
     - meta: flush_handlers
 
@@ -129,6 +125,8 @@
         name: "{{ sonarqube_user }}"
         password: "{{ sonarqube_pass }}"
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
     - name: GRANT ALL PRIVILEGES ON DATABASE {{ sonarqube_db }} TO {{ sonarqube_user }}
       community.postgresql.postgresql_privs:
         login_db: postgres
@@ -137,19 +135,24 @@
         obj: "{{ sonarqube_db }}"
         role: "{{ sonarqube_user }}"
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
     - name: Allow connections for SonarQube user
       community.postgresql.postgresql_pg_hba:
-        dest: /var/lib/pgsql/17/data/pg_hba.conf
+        dest: /etc/postgresql/17/main/pg_hba.conf
         contype: hostssl
         users: "{{ sonarqube_user }}"
         source: "{{ my_ip }}"
         databases: sonarqube
       become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
       notify: Restart PostgreSQL
 
   vars:
     domain: sreafterhours.dev
-    postgres_data: /var/lib/pgsql/17/data
+    postgres_data: /var/lib/postgresql
+    postgres_config: /etc/postgresql
     postgres_pass: !vault |
       $ANSIBLE_VAULT;1.1;AES256
       64333632346432383932356565386161376331636539383535633532366633333761636261363864
@@ -168,15 +171,15 @@
       6266
     my_ip: !vault |
       $ANSIBLE_VAULT;1.1;AES256
-      65653632303032396238393231663531633931666634363366336133633938323465343830316534
-      3762346666383132616131326238353033623635656363330a396233623435323330636437653937
-      32623832623264353764356130346631633535326663386365373536383532366536333433333437
-      6637613037663064380a623839393366343562373666353337633862623764623332666332663430
-      37336162373762333934303934666534326431353035336231353539376534316463
+      61336163313630383533626164393165363330353136623931323832303038356431366533333965
+      6463386363336664353861373039353836346233633434650a383534633630633636383166643537
+      31646135373764623138616664306535313265616438616364656238356565353162393734333161
+      3265383137313737630a333661643135333233636164383637356564663735653263363161373866
+      61396438333365323235636266663136626331623431643661613336323935653731
 
   handlers:
 
     - name: Restart PostgreSQL
       ansible.builtin.systemd:
-        name: postgresql-17
+        name: postgresql
         state: restarted

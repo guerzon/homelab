@@ -6,6 +6,7 @@
       ansible.builtin.dnf:
         name:
           - policycoreutils-python-utils
+          - vim
         state: present
       become: true
       when: ansible_os_family == "RedHat"

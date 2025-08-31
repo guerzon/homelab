@@ -19,7 +19,7 @@
           state: directory
           owner: "node-exp"
           group: "node-exp"
-          mode: 0755
+          mode: "0775"
         become: true
         when: ansible_os_family == "RedHat" or ansible_os_family =="Debian"
       - name: Copy the certificate and key file
