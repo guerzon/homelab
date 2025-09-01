@@ -34,6 +34,7 @@
         mode: '0644'
       with_items:
         - prometheus
+        - sonarqube
       notify: Restart Nginx
 
     - name : Set SELinux boolean httpd_can_network_connect

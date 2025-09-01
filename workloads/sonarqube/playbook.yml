@@ -1,0 +1,82 @@
+- hosts: sonarqube
+  become: true
+  tasks:
+
+    - name: Create the {{ sonarqube_user }} user
+      ansible.builtin.user:
+        name: "{{ sonarqube_user }}"
+        comment: "SonarQube user"
+
+    - name: Ensure {{ sonarqube_home }} exists
+      ansible.builtin.file:
+        path: "{{ sonarqube_home }}"
+        state: directory
+        owner: "{{ sonarqube_user }}"
+        group: "{{ sonarqube_user }}"
+        mode: "0700"
+
+    - name: Download the SonarQube CE binary
+      ansible.builtin.get_url:
+        url: "{{ sonarqube_download_url }}/sonarqube-{{ sonarqube_version }}.zip"
+        dest: /data/downloads/sonarqube-{{ sonarqube_version }}.zip
+
+    - name: Extract the archive to {{ sonarqube_home }}
+      ansible.builtin.unarchive:
+        src: /data/downloads/sonarqube-{{ sonarqube_version }}.zip
+        dest: "{{ sonarqube_home }}"
+        owner: "{{ sonarqube_user }}"
+        group: "{{ sonarqube_user }}"
+        remote_src: true
+
+    - name: Create symbolic link to sonarqube-{{ sonarqube_version }}
+      ansible.builtin.file:
+        src: "{{ sonarqube_home }}/sonarqube-{{ sonarqube_version }}"
+        dest: "{{ sonarqube_home }}/current"
+        owner: "{{ sonarqube_user }}"
+        group: "{{ sonarqube_user }}"
+        state: link
+
+    - name: Configure SonarQube
+      ansible.builtin.template:
+        src: sonar.properties
+        dest: "{{ sonarqube_home }}/current/conf/"
+        owner: "{{ sonarqube_user }}"
+        group: "{{ sonarqube_user }}"
+        mode: "0644"
+      notify: Restart SonarQube
+
+    - name: Configure service file
+      ansible.builtin.template:
+        src: sonarqube.service
+        dest: /etc/systemd/system/
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart SonarQube
+
+  handlers:
+    - name: Restart SonarQube
+      ansible.builtin.systemd_service:
+        name: sonarqube
+        state: restarted
+        enabled: true
+        daemon_reload: true
+      when: not ansible_check_mode
+
+  vars:
+    sonarqube_user: "sonarqube"
+    sonarqube_version: "25.8.0.112029"
+    sonarqube_download_url: "https://binaries.sonarsource.com/Distribution/sonarqube"
+    sonarqube_home: /data/sonarqube
+    sonarqube_jwt_token: Kw98Jx+jqqUq+08JMpgcg2l+qii/Cvt7KIYtWrvxSpk=
+    sonarqube_db: "sonarqube"
+    sonarqube_db_user: "sonarqube"
+    sonarqube_db_pass: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      30323662666564326563663432613738666538376238303234333962633430656639653033393636
+      3665666563646436323631366463316238353233363664360a336136386630353466333633636466
+      66613166633037313236343365313736346166373135353161633531303533646365666539316435
+      3936393539353530360a376463393666633962366565396531313538323335393431316138613830
+      6266
+    sonarqube_host: "127.0.0.1"
+    sonarqube_port: "9000"

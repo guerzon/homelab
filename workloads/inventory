@@ -32,4 +32,4 @@ server3.homelab.sreafterhours.dev
 server2.homelab.sreafterhours.dev
 
 [sonarqube]
-server2.homelab.sreafterhours.dev
+node1.sreafterhours.dev

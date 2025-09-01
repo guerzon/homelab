@@ -5,7 +5,10 @@ resource "google_compute_firewall" "allow_apps" {
     protocol = "tcp"
     ports    = ["80", "443", "5432"]
   }
-  source_ranges = [var.my_ip]
+  source_ranges = [
+    var.my_ip,
+    module.node1.public_ip # allow connections coming from Azure agent
+  ]
   priority      = 65534
   target_tags   = ["nginx", "postgres"]
 }

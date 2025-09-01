@@ -54,3 +54,15 @@ module "dns_record_postgres" {
   record_content = ["node1.${var.domain_name}"]
   record_ttl     = 60
 }
+
+##### Monitoring Stack and DB #####
+
+module "dns_record_sonarqube" {
+  source         = "guerzon/gcp/modules//dnsrecord"
+  version        = "1.3.1"
+  managed_zone   = data.terraform_remote_state.common_gcp.outputs.dns_zone_sreafterhours
+  record_name    = "sonarqube.${var.domain_name}"
+  record_type    = "CNAME"
+  record_content = ["node1.${var.domain_name}"]
+  record_ttl     = 60
+}

@@ -20,9 +20,9 @@ GCP Modules, located here: <https://github.com/guerzon/terraform-modules-gcp>:
 
 ### Applications
 
-[Vaultwarden](./applications/vaultwarden/), using:
+[Vaultwarden](./terraform/vaultwarden-gke/), using:
 
-- [] Secrets Manager
+- [-] Secrets Manager
 - [x] Cloud SQL PostgreSQL, single-region
 - [x] GKE Standard Cluster, single-region
 - [x] Call [Helm chart](https://github.com/guerzon/vaultwarden)
@@ -35,8 +35,9 @@ Fought the urge to create an Ansible role for each of these.
 
 ### Infra
 
-- [x] PostgreSQL
+- [x] [PostgreSQL](./workloads/postgres/)
 - [-] JFrog Artifactory
+- [x] [Nginx](./workloads/nginx/)
 
 ### CI/CD
 
@@ -44,10 +45,10 @@ Fought the urge to create an Ansible role for each of these.
 
 ### Security
 
-- [-] Sonarqube
+- [x] [Sonarqube](./workloads/sonarqube/)
 
 ### Monitoring and alerting
 
-- [x] Prometheus
+- [x] [Prometheus](./workloads/prometheus/)
 - [-] Grafana
 - [-] Elasticsearch

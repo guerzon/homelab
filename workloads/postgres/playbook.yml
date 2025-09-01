@@ -137,6 +137,29 @@
       become_user: postgres
       vars:
         ansible_ssh_pipelining: true
+      notify: Reload PostgreSQL
+    - name: GRANT ALL PRIVILEGES ON SCHEMA public TO {{ sonarqube_user }}
+      community.postgresql.postgresql_privs:
+        login_db: "{{ sonarqube_db }}"
+        privs: ALL
+        type: schema
+        objs: public
+        role: "{{ sonarqube_user }}"
+      become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
+      notify: Reload PostgreSQL
+    - name: Allow connections for SonarQube user (localhost)
+      community.postgresql.postgresql_pg_hba:
+        dest: /etc/postgresql/17/main/pg_hba.conf
+        contype: hostssl
+        users: "{{ sonarqube_user }}"
+        source: "127.0.0.1"
+        databases: sonarqube
+      become_user: postgres
+      vars:
+        ansible_ssh_pipelining: true
+      notify: Reload PostgreSQL
     - name: Allow connections for SonarQube user
       community.postgresql.postgresql_pg_hba:
         dest: /etc/postgresql/17/main/pg_hba.conf
@@ -147,7 +170,7 @@
       become_user: postgres
       vars:
         ansible_ssh_pipelining: true
-      notify: Restart PostgreSQL
+      notify: Reload PostgreSQL
 
   vars:
     domain: sreafterhours.dev
@@ -183,3 +206,10 @@
       ansible.builtin.systemd:
         name: postgresql
         state: restarted
+      when: not ansible_check_mode
+
+    - name: Reload PostgreSQL
+      ansible.builtin.systemd:
+        name: postgresql
+        state: reloaded
+      when: not ansible_check_mode

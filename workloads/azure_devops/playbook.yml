@@ -2,17 +2,7 @@
 
   tasks:
 
-    - name: Install tools (RedHat)
-      ansible.builtin.dnf:
-        name:
-          - wget
-          - nc
-          - git
-        state: present
-      become: true
-      when: ansible_os_family == "RedHat"
-
-    - name: Install tools (Ubuntu)
+    - name: Install tools
       ansible.builtin.apt:
         name:
           - wget
@@ -25,7 +15,6 @@
         state: present
         update_cache: true
       become: true
-      when: ansible_os_family == "Debian"
 
     - name: Ensure {{ azure_agent_path }} exists
       ansible.builtin.file:
@@ -63,12 +52,11 @@
       ansible.builtin.apt:
         name:
           - maven
+          - openjdk-11-jdk
           - openjdk-21-jdk
         state: present
         update_cache: true
       become: true
-
-    - meta: end_play
 
     ##### Docker #####
 
