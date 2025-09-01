@@ -8,10 +8,11 @@ data "terraform_remote_state" "common_gcp" {
 
 module "node1" {
   source                 = "guerzon/gcp/modules//computeinstance"
-  version                = "1.5.0"
+  version                = "1.6.0"
   server_name            = "node1"
   instance_type          = "e2-standard-2"
   vm_instance_image      = var.instance_image
+  vm_bootdisk_size       = "20"
   region                 = var.region
   zone                   = "${var.region}-a"
   subnetwork             = data.terraform_remote_state.common_gcp.outputs.singapore_subnet

@@ -36,9 +36,24 @@
         remote_src: yes
       when: download_agent.changed
 
-    - debug:
-        msg: "Agent has been newly-extracted. Kindly configure."
-      when: download_agent.changed
+    - name: Configure the agent
+      ansible.builtin.shell: |
+        cd /data/azure_agent
+        ./config.sh --unattended --url https://dev.azure.com/lesterguerzon --auth pat --token {{ azure_path_gce_agent }} --pool GCE_AGENT --agent node1 --acceptTeeEula
+      args:
+        creates: /data/azure_agent/.agent
+      notify: Restart the agent
+
+    - name: Ensure the service is installed
+      ansible.builtin.shell: |
+        cd /data/azure_agent
+        sudo ./svc.sh install
+      failed_when: false
+
+    - name: Ensure the service is started
+      ansible.builtin.shell: |
+        cd /data/azure_agent
+        sudo ./svc.sh start
 
     - name: Create the tools directory
       ansible.builtin.file:
@@ -135,6 +150,13 @@
         state: touch
       loop: "{{ python_releases_url | dict2items }}"
 
+  handlers:
+
+    - name: Restart the agent
+      ansible.builtin.shell: |
+        cd /data/azure_agent
+        sudo ./svc.sh restart
+
   vars:
 
     azure_agent_path: "/data/azure_agent"
@@ -146,3 +168,14 @@
       "3.13.7": "https://github.com/actions/python-versions/releases/download/3.13.7-16980743123/python-3.13.7-linux-24.04-x64.tar.gz"
       "3.12.11": "https://github.com/actions/python-versions/releases/download/3.12.11-15433310049/python-3.12.11-linux-24.04-x64.tar.gz"
       "3.11.13": "https://github.com/actions/python-versions/releases/download/3.11.13-15433298024/python-3.11.13-linux-24.04-x64.tar.gz"
+    azure_path_gce_agent: !vault |
+      $ANSIBLE_VAULT;1.1;AES256
+      32343539363665326162356438396238353435653133353466363033653533333261646534636639
+      3638613739346138623863356137383661303864396339630a393731653331303266643530366564
+      66326238313662306432663635373431393934386332323239663863363263666235636639306332
+      6465646134616334370a613863386133376461333265636638626531366664353735333665303635
+      63623731633338623963623766613039646264616536356565646263326438383734353335643265
+      34323361363363663031306231333734616661633831326562376338353263626634383438613537
+      63623131623664333632313966646636343237306138333265336161326365303436333231306436
+      62666362623338643434316630663734653161636635623134363534623461383430656665613739
+      3532

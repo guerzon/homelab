@@ -9,8 +9,8 @@ resource "google_compute_firewall" "allow_apps" {
     var.my_ip,
     module.node1.public_ip # allow connections coming from Azure agent
   ]
-  priority      = 65534
-  target_tags   = ["nginx", "postgres"]
+  priority    = 65534
+  target_tags = ["nginx", "postgres"]
 }
 
 resource "google_compute_firewall" "allow_monitoring" {

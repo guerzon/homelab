@@ -2,7 +2,7 @@
   gather_facts: true
   tasks:
 
-    - name: Install tools
+    - name: Install tools (RedHat)
       ansible.builtin.dnf:
         name:
           - policycoreutils-python-utils
@@ -11,13 +11,14 @@
       become: true
       when: ansible_os_family == "RedHat"
 
-    # - name: Set SELinux to permissive
-    #   ansible.posix.selinux:
-    #     policy: targeted
-    #     state: permissive
-    #   become: true
-    #   when: ansible_os_family == "RedHat"
-    #   notify: Reboot host
+    - name: Install tools (Ubuntu)
+      ansible.builtin.apt:
+        name:
+          - vim
+          - unzip
+        state: present
+      become: true
+      when: ansible_os_family == "Debian"
 
   handlers:
     - name: Reboot host
